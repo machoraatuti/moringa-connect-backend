@@ -1,0 +1,18 @@
+{
+  "name": "moringaserver",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "debug": "^4.3.4",
+    "express": "^4.19.2",
+    "http-errors": "^2.0.0",
+    "mongodb-legacy": "^6.0.1",
+    "mongoose": "^8.4.0",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.2"
+  }
+}
