@@ -11,6 +11,9 @@ const mentorshipRoutes = require('./routes/mentorshipRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 
+const connectionRoutes = require('./routes/connectionRoutes');
+
+
 // Middleware
 app.use(express.json());
 app.use(cors());
@@ -31,6 +34,8 @@ app.use('/api/discussions', discussionRoutes);
 app.use('/api/mentorship', mentorshipRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/messages', messageRoutes);
+
+app.use('/api/connections', connectionRoutes);
 
 // Start Server with fallback ports
 const startServer = (port) => {
