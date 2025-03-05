@@ -12,7 +12,7 @@ var eventsRouter = require('./routes/eventsRouter'); // Import events routes
 
 var app = express();
 
-const url = 'mongodb://127.0.0.1:27017/moringaconnect';
+const url = 'mongodb://127.0.0.1:27018/moringaconnect';
 const connect = mongoose.connect(url, {});
 
 connect.then(() => console.log('Connected correctly to server'),
