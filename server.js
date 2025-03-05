@@ -28,20 +28,27 @@ app.use(cookieParser());
 app.use(cors()); // ✅ Global CORS
 app.use(express.static(path.join(__dirname, "public")));
 
-// Routes
+// Import routes
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const eventsRouter = require("./routes/eventsRouter");
 const newsRouter = require("./routes/newsRouter");
 const discussionRoutes = require("./routes/discussionRoutes");
 const mentorshipRoutes = require("./routes/mentorshipRoutes");
+const groupRoutes = require("./routes/groupRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const connectionRoutes = require("./routes/connectionRoutes");
 
+// Routes
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/api/events", eventsRouter);
 app.use("/news", newsRouter);
 app.use("/api/discussions", discussionRoutes);
 app.use("/api/mentorship", mentorshipRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/connections', connectionRoutes);
 
 // Default Route
 app.get("/", (req, res) => {
