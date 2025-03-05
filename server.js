@@ -9,6 +9,10 @@ const PORT = process.env.PORT || 5000;
 const discussionRoutes = require('./routes/discussionRoutes');
 const mentorshipRoutes = require('./routes/mentorshipRoutes');
 const groupRoutes = require('./routes/groupRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+
+const connectionRoutes = require('./routes/connectionRoutes');
+
 
 // Middleware
 app.use(express.json());
@@ -29,6 +33,9 @@ app.get("/", (req, res) => {
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/mentorship', mentorshipRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/messages', messageRoutes);
+
+app.use('/api/connections', connectionRoutes);
 
 // Start Server with fallback ports
 const startServer = (port) => {
