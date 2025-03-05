@@ -1,9 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const Event = require("../models/events");
+const auth = require("../authenticate");
+const cors = require("../routes/cors");
 
-//  POST /events → Create an event
-router.post("/", async (req, res) => {
+// CORS preflight
+router.options("*", cors.corsWithOptions, (req, res) => res.sendStatus(200));
+
+// Create an event (requires auth)
+router.post("/", cors.corsWithOptions, auth, async (req, res) => {
   try {
     const event = new Event(req.body);
     await event.save();
@@ -13,16 +18,18 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+// Get all events (requires auth)
+router.get("/", cors.cors, auth, async (req, res) => {
   try {
-    const events = await Event.find(); // 
+    const events = await Event.find();
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.get("/:id", async (req, res) => {
+// Get single event (requires auth)
+router.get("/:id", cors.cors, auth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: "Event not found" });
@@ -32,8 +39,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//  PUT /events/:id → Update an event
-router.put("/:id", async (req, res) => {
+// Update an event (requires auth)
+router.put("/:id", cors.corsWithOptions, auth, async (req, res) => {
   try {
     const updatedEvent = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedEvent) return res.status(404).json({ error: "Event not found" });
@@ -43,8 +50,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE /events/:id → Delete an event
-router.delete("/:id", async (req, res) => {
+// Delete an event (requires auth)
+router.delete("/:id", cors.corsWithOptions, auth, async (req, res) => {
   try {
     const deletedEvent = await Event.findByIdAndDelete(req.params.id);
     if (!deletedEvent) return res.status(404).json({ error: "Event not found" });
@@ -54,8 +61,8 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// POST /events/:id/like → Like an event
-router.post("/:id/like", async (req, res) => {
+// Like/unlike an event (requires auth)
+router.post("/:id/like", cors.corsWithOptions, auth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: "Event not found" });
@@ -65,15 +72,12 @@ router.post("/:id/like", async (req, res) => {
       return res.status(400).json({ error: "User ID is required." });
     }
 
-    // Check if user has already liked the event
     const likeIndex = event.likes.indexOf(userId);
 
     if (likeIndex !== -1) {
-      // If user already liked, remove the like (Unlike)
-      event.likes.splice(likeIndex, 1);
+      event.likes.splice(likeIndex, 1); // Unlike
     } else {
-      // If user hasn't liked, add the like
-      event.likes.push(userId);
+      event.likes.push(userId); // Like
     }
 
     await event.save();
@@ -83,8 +87,8 @@ router.post("/:id/like", async (req, res) => {
   }
 });
 
-// POST /events/:id/comment → Comment on an event
-router.post("/:id/comment", async (req, res) => {
+// Comment on an event (requires auth)
+router.post("/:id/comment", cors.corsWithOptions, auth, async (req, res) => {
   try {
     const { userId, text } = req.body;
 
@@ -96,14 +100,14 @@ router.post("/:id/comment", async (req, res) => {
     if (!event) return res.status(404).json({ error: "Event not found" });
 
     const comment = {
-      author: userId, // Fix: Use 'author' instead of 'user'
-      text: text,
-      createdAt: new Date(), // Ensure timestamp is included
+      author: userId,
+      text,
+      createdAt: new Date(),
     };
 
     event.comments.push(comment);
     await event.save();
-    
+
     res.status(201).json(event);
   } catch (error) {
     res.status(500).json({ error: error.message });
