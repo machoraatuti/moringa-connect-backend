@@ -1,21 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const messageController = require('../controllers/messageController');
-const auth = require('../middleware/auth');
+const authenticate = require("../authenticate");
+const cors = require("../routes/cors");
 
-// Get all messages for logged in user
-router.get('/', auth, messageController.getUserMessages);
+router.route('/')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, messageController.getUserMessages)
+.post(cors.corsWithOptions, authenticate.verifyUser, messageController.sendMessage);
 
-// Get conversation with specific user
-router.get('/conversation/:userId', auth, messageController.getConversation);
+router.route('/conversation/:userId')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, messageController.getConversation);
 
-// Send a message
-router.post('/', auth, messageController.sendMessage);
+router.route('/:id/read')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.put(cors.corsWithOptions, authenticate.verifyUser, messageController.markAsRead);
 
-// Mark message as read
-router.put('/:id/read', auth, messageController.markAsRead);
-
-// Delete a message
-router.delete('/:id', auth, messageController.deleteMessage);
+router.route('/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.delete(cors.corsWithOptions, authenticate.verifyUser, messageController.deleteMessage);
 
 module.exports = router;

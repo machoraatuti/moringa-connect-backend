@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 
 // Get all user connections
 exports.getUserConnections = async (req, res) => {

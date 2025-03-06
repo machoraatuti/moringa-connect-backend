@@ -1,24 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const connectionController = require('../controllers/connectionController');
-const auth = require('../middleware/auth');
+const authenticate = require("../authenticate");
+const cors = require("../routes/cors");
 
-// Get all connections for logged in user
-router.get('/', auth, connectionController.getUserConnections);
+router.route('/')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, connectionController.getUserConnections);
 
-// Get all connection requests for logged in user
-router.get('/requests', auth, connectionController.getConnectionRequests);
+router.route('/requests')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, connectionController.getConnectionRequests);
 
-// Send a connection request
-router.post('/request/:id', auth, connectionController.sendConnectionRequest);
+router.route('/request/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, connectionController.sendConnectionRequest);
 
-// Accept a connection request
-router.post('/accept/:id', auth, connectionController.acceptConnectionRequest);
+router.route('/accept/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, connectionController.acceptConnectionRequest);
 
-// Reject a connection request
-router.post('/reject/:id', auth, connectionController.rejectConnectionRequest);
+router.route('/reject/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, connectionController.rejectConnectionRequest);
 
-// Remove an existing connection
-router.delete('/:id', auth, connectionController.removeConnection);
+router.route('/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+// If only admins can delete connections:
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, connectionController.removeConnection);
 
 module.exports = router;
