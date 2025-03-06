@@ -65,4 +65,4 @@ This repository contains the backend API for the Moringa Alumni Connect platform
 - `POST /api/connections/request/:id` - Send connection request
 - `POST /api/connections/accept/:id` - Accept connection request
 - `POST /api/connections/reject/:id` - Reject connection request
-- `DELETE /api/connections/:id` - Remove connection
+- `DELETE /api/connections/:id` - Remove connection 
