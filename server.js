@@ -11,12 +11,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27018/moringaconnect';
+const MONGO_URI =  'mongodb://127.0.0.1:27018/moringaconnect';
 mongoose.connect(MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// View Engine Setup (for views like error pages)
+// View engine setup (if you need views)
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
@@ -25,10 +25,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors()); // ✅ Global CORS
+app.use(cors());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Import routes
+// Routes
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const eventsRouter = require("./routes/eventsRouter");
@@ -38,17 +38,20 @@ const mentorshipRoutes = require("./routes/mentorshipRoutes");
 const groupRoutes = require("./routes/groupRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const connectionRoutes = require("./routes/connectionRoutes");
+const feedRoutes = require("./routes/feedRoutes");
+const jobRoutes = require("./routes/jobRoutes");
 
-// Routes
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/api/events", eventsRouter);
-app.use("/news", newsRouter);
+app.use("/api/news", newsRouter);
 app.use("/api/discussions", discussionRoutes);
 app.use("/api/mentorship", mentorshipRoutes);
-app.use('/api/groups', groupRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/connections', connectionRoutes);
+app.use("/api/groups", groupRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/connections", connectionRoutes);
+app.use("/api/feed", feedRoutes);
+app.use("/api/jobs", jobRoutes);
 
 // Default Route
 app.get("/", (req, res) => {
@@ -57,16 +60,16 @@ app.get("/", (req, res) => {
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
-  next(createError(404));
+  next(createError(404, "Resource not found"));
 });
 
-// Error handler
+// Error handler (JSON response)
 app.use((err, req, res, next) => {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  res.status(err.status || 500);
-  res.render("error");
+  res.status(err.status || 500).json({
+    message: err.message,
+    status: err.status || 500,
+    error: req.app.get("env") === "development" ? err : {},
+  });
 });
 
 // Start Server with fallback ports

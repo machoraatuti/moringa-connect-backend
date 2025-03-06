@@ -1,5 +1,5 @@
 const Post = require('../models/Post');
-const User = require('../models/User');
+const User = require('../models/user');
 
 // Get feed posts (from user and connections)
 exports.getFeed = async (req, res) => {

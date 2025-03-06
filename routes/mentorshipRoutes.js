@@ -8,18 +8,18 @@ const cors = require("../routes/cors");
 router.options('*', cors.corsWithOptions);
 
 // Get all mentorship requests (requires auth)
-router.get('/', cors.cors, auth, mentorshipController.getAllMentorships);
+router.get('/', cors.cors, auth.verifyUser, mentorshipController.getAllMentorships);
 
 // Get mentorship by ID (requires auth)
-router.get('/:id', cors.cors, auth, mentorshipController.getMentorshipById);
+router.get('/:id', cors.cors, auth.verifyUser, mentorshipController.getMentorshipById);
 
 // Create mentorship request (requires auth)
-router.post('/', cors.corsWithOptions, auth, mentorshipController.createMentorship);
+router.post('/', cors.corsWithOptions, auth.verifyUser, mentorshipController.createMentorship);
 
 // Update mentorship status (requires auth)
-router.put('/:id', cors.corsWithOptions, auth, mentorshipController.updateMentorshipStatus);
+router.put('/:id', cors.corsWithOptions, auth.verifyUser, mentorshipController.updateMentorshipStatus);
 
 // Toggle mentor availability (requires auth)
-router.put('/availability/toggle', cors.corsWithOptions, auth, mentorshipController.toggleAvailability);
+router.put('/availability/toggle', cors.corsWithOptions, auth.verifyUser, mentorshipController.toggleAvailability);
 
 module.exports = router;
