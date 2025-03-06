@@ -22,31 +22,37 @@ router.get('/', authenticate.verifyUser, (req, res, next) => {
 
 /* SIGNUP */
 router.post('/signup', (req, res) => {
-    const user = new User({ username: req.body.username });
+    const user = new User({
+        email: req.body.email,
+        name: req.body.name,
+        bio: req.body.bio,
+        graduationYear: req.body.graduationYear,
+        course: req.body.course
+    });
 
-    User.register(user, req.body.password)
-        .then(registeredUser => {
-            if (req.body.firstname) {
-                registeredUser.firstname = req.body.firstname;
-            }
-            if (req.body.lastname) {
-                registeredUser.lastname = req.body.lastname;
-            }
-            return registeredUser.save();
-        })
-        .then(() => {
-            passport.authenticate('local')(req, res, () => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json({ success: true, status: 'Registration Successful!' });
-            });
-        })
-        .catch(err => {
+    User.register(user, req.body.password, (err, registeredUser) => {
+        if (err) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.json({ err: err });
+
+            if (err.name === 'UserExistsError') {
+                res.statusCode = 409; // Conflict
+                return res.json({ success: false, message: 'A user with that email already exists.' });
+            }
+
+            return res.json({ success: false, err: err });
+        }
+
+        passport.authenticate('local')(req, res, () => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json({ success: true, status: 'Registration Successful!' });
         });
+    });
 });
+
+
+
 
 /* LOGIN */
 router.post('/login', passport.authenticate('local', { session: false }), (req, res) => {
