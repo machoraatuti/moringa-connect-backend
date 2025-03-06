@@ -1,44 +1,73 @@
-//Imports
 const express = require("express");
-const auth = require('../middleware/auth'); // You'll need to create this middleware
-const newsController = require('../controllers/newsController');
+const News = require("../models/news");
+const auth = require("../authenticate");
+const cors = require("../routes/cors");
 
-//Express Router
 const newsRouter = express.Router();
 
-// Get all news articles
-newsRouter.get('/', newsController.getAllNews);
+newsRouter.route("/")
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.find()
+    .then(news => res.json(news))
+    .catch(err => next(err));
+})
+.post(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.create(req.body)
+    .then(update => res.json(update))
+    .catch(err => next(err));
+})
+.put(cors.corsWithOptions, auth.verifyUser, (req, res) => res.status(403).end("PUT not supported"))
+.delete(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.deleteMany()
+    .then(response => res.json(response))
+    .catch(err => next(err));
+});
 
-// Get news article by ID
-newsRouter.get('/:newsId', newsController.getNewsById);
+newsRouter.route("/:newsId")
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findById(req.params.newsId)
+    .then(news => res.json(news))
+    .catch(err => next(err));
+})
+.post(cors.corsWithOptions, auth.verifyUser, (req, res) => res.status(403).end(`POST not allowed`))
+.put(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findByIdAndUpdate(req.params.newsId, { $set: req.body }, { new: true })
+    .then(news => res.json(news))
+    .catch(err => next(err));
+})
+.delete(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findByIdAndDelete(req.params.newsId)
+    .then(response => res.json(response))
+    .catch(err => next(err));
+});
 
-// Create new news article (requires auth)
-newsRouter.post('/', auth, newsController.createNews);
+newsRouter.route("/:newsId/comments")
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findById(req.params.newsId)
+    .then(news => res.json(news.comments))
+    .catch(err => next(err));
+})
+.post(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findById(req.params.newsId)
+    .then(news => {
+        news.comments.push(req.body);
+        return news.save();
+    })
+    .then(news => res.json(news.comments))
+    .catch(err => next(err));
+})
+.put(cors.corsWithOptions, auth.verifyUser, (req, res) => res.status(403).end(`PUT not supported`))
+.delete(cors.corsWithOptions, auth.verifyUser, (req, res, next) => {
+    News.findById(req.params.newsId)
+    .then(news => {
+        news.comments = [];
+        return news.save();
+    })
+    .then(news => res.json(news.comments))
+    .catch(err => next(err));
+});
 
-// Update news article (requires auth)
-newsRouter.put('/:newsId', auth, newsController.updateNews);
-
-// Delete news article (requires auth)
-newsRouter.delete('/:newsId', auth, newsController.deleteNews);
-
-
-// Add comment to news article (requires auth)
-newsRouter.post('/:newsId/comments', auth, newsController.addComment);
-
-// Get comments for a news article
-newsRouter.get('/:newsId/comments', newsController.getComments);
-
-// Delete all comments in a news article (requires auth)
-newsRouter.delete('/:newsId/comments', auth, newsController.deleteComments);
-
-
-// Like a news article (requires auth)
-newsRouter.put('/:newsId/like', auth, newsController.likeNews);
-
-
-// Share a news article (requires auth)
-newsRouter.put('/:newsId/share', auth, newsController.shareNews);
-
-
-//Exports
 module.exports = newsRouter;

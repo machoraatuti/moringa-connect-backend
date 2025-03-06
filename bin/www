@@ -4,30 +4,51 @@
  * Module dependencies.
  */
 
-var expressServer = require('../server');
+var app = require('../app');
 var debug = require('debug')('moringa-connect-backend:server');
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '3000');
-expressServer.set('port', port);
+var secPort = normalizePort(process.env.SEC_PORT || '3443'); // Added HTTPS port
+app.set('port', port);
+app.set('secPort', secPort);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(expressServer);
+var server = http.createServer(app);
 
 /**
- * Listen on provided port, on all network interfaces.
+ * Create HTTPS server.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+const httpsOptions = {
+  key: fs.readFileSync(__dirname + '/server.key'),
+  cert: fs.readFileSync(__dirname + '/server.cert'),
+};
+
+var secureServer = https.createServer(httpsOptions, app);
+
+/**
+ * Listen on provided ports, on all network interfaces.
+ */
+
+server.listen(port, () => {
+  console.log(`HTTP Server listening on port ${port}`);
+});
+server.on('error', (error) => onError(error, port));
+
+secureServer.listen(secPort, () => {
+  console.log(`HTTPS Server listening on port ${secPort}`);
+});
+secureServer.on('error', (error) => onError(error, secPort));
 
 /**
  * Normalize a port into a number, string, or false.
@@ -36,24 +57,20 @@ server.on('listening', onListening);
 function normalizePort(val) {
   var port = parseInt(val, 10);
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
+  if (isNaN(val)) {
+    return val; // named pipe
   }
-
   if (port >= 0) {
-    // port number
-    return port;
+    return port; // port number
   }
-
   return false;
 }
 
 /**
- * Event listener for HTTP server "error" event.
+ * Event listener for server "error" events.
  */
 
-function onError(error) {
+function onError(error, port) {
   if (error.syscall !== 'listen') {
     throw error;
   }
@@ -62,7 +79,7 @@ function onError(error) {
     ? 'Pipe ' + port
     : 'Port ' + port;
 
-  // handle specific listen errors with friendly messages
+  // handle specific listen errors
   switch (error.code) {
     case 'EACCES':
       console.error(bind + ' requires elevated privileges');
@@ -75,16 +92,4 @@ function onError(error) {
     default:
       throw error;
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
 }
