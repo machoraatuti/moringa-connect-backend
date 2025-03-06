@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
-const MONGO_URI =  'mongodb://127.0.0.1:27018/moringaconnect';
+const MONGO_URI =  'mongodb://127.0.0.1:27017/moringaconnect';
 mongoose.connect(MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
