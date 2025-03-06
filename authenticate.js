@@ -6,8 +6,13 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const jwt = require('jsonwebtoken');
 const config = require('./config.js');
 
-// Local Strategy for handling username/password login
-exports.local = passport.use(new LocalStrategy(User.authenticate()));
+// ✅ Local Strategy for handling email/password login
+exports.local = passport.use(
+    new LocalStrategy(
+        { usernameField: 'email' }, // ✅ Tell Passport to use 'email'
+        User.authenticate()
+    )
+);
 
 // Function to generate JWT tokens
 exports.getToken = function(user) {

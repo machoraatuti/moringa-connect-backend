@@ -1,27 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const groupController = require('../controllers/groupController');
-const auth = require('../middleware/auth');
+const authenticate = require("../authenticate");
+const cors = require("../routes/cors");
 
-// Get all groups
-router.get('/', groupController.getAllGroups);
+router.route('/')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, groupController.getAllGroups)
+.post(cors.corsWithOptions, authenticate.verifyUser, groupController.createGroup);
 
-// Create a new group
-router.post('/', auth, groupController.createGroup);
+router.route('/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, groupController.getGroupById)
+.put(cors.corsWithOptions, authenticate.verifyUser, groupController.updateGroup)
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, groupController.deleteGroup);
 
-// Get a specific group
-router.get('/:id', groupController.getGroupById);
+router.route('/:id/join')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, groupController.joinGroup);
 
-// Update a group
-router.put('/:id', auth, groupController.updateGroup);
-
-// Delete a group
-router.delete('/:id', auth, groupController.deleteGroup);
-
-// Join a group
-router.post('/:id/join', auth, groupController.joinGroup);
-
-// Leave a group
-router.post('/:id/leave', auth, groupController.leaveGroup);
+router.route('/:id/leave')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, groupController.leaveGroup);
 
 module.exports = router;

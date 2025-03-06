@@ -1,33 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const feedController = require('../controllers/feedController');
-const auth = require('../middleware/auth');
+const authenticate = require('../authenticate');
+const cors = require('../routes/cors');
 
-// Get feed for logged in user
-router.get('/', auth, feedController.getFeed);
+router.route('/')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, feedController.getFeed)
+.post(cors.corsWithOptions, authenticate.verifyUser, feedController.createPost);
 
-// Create a new post
-router.post('/', auth, feedController.createPost);
+router.route('/post/:id')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.corsWithOptions, authenticate.verifyUser, feedController.getPostById)
+.put(cors.corsWithOptions, authenticate.verifyUser, feedController.updatePost)
+.delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, feedController.deletePost);
 
-// Get a specific post
-router.get('/post/:id', feedController.getPostById);
+router.route('/post/:id/like')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.put(cors.corsWithOptions, authenticate.verifyUser, feedController.likePost);
 
-// Update a post
-router.put('/post/:id', auth, feedController.updatePost);
+router.route('/post/:id/unlike')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.put(cors.corsWithOptions, authenticate.verifyUser, feedController.unlikePost);
 
-// Delete a post
-router.delete('/post/:id', auth, feedController.deletePost);
+router.route('/post/:id/comment')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.post(cors.corsWithOptions, authenticate.verifyUser, feedController.addComment);
 
-// Like a post
-router.put('/post/:id/like', auth, feedController.likePost);
-
-// Unlike a post
-router.put('/post/:id/unlike', auth, feedController.unlikePost);
-
-// Add comment to a post
-router.post('/post/:id/comment', auth, feedController.addComment);
-
-// Delete comment from a post
-router.delete('/post/:id/comment/:commentId', auth, feedController.deleteComment);
+router.route('/post/:id/comment/:commentId')
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.delete(cors.corsWithOptions, authenticate.verifyUser, feedController.deleteComment);
 
 module.exports = router;
